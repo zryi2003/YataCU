@@ -2,8 +2,8 @@
 // Created by Zhuoran Yi on 2026/2/22.
 //
 
-#ifndef WAVEFRONTRENDERER_CUDASTREAM_CUH
-#define WAVEFRONTRENDERER_CUDASTREAM_CUH
+#ifndef YATACU_CUDASTREAM_CUH
+#define YATACU_CUDASTREAM_CUH
 
 #include <CUDADevice.cuh>
 #include <CUDAMemory.cuh>
@@ -75,4 +75,4 @@ namespace YATACU {
     };
 }
 
-#endif //WAVEFRONTRENDERER_CUDASTREAM_CUH
+#endif //YATACU_CUDASTREAM_CUH

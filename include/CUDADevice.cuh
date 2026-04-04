@@ -2,9 +2,10 @@
 // Created by Zhuoran Yi on 2026/2/22.
 //
 
-#ifndef WAVEFRONTRENDERER_CUDADEVICE_CUH
-#define WAVEFRONTRENDERER_CUDADEVICE_CUH
+#ifndef YATACU_CUDADEVICE_CUH
+#define YATACU_CUDADEVICE_CUH
 #include <CUDADefines.cuh>
+#include <CUDAError.cuh>
 #include <CUDAMemory.cuh>
 #include <source_location>
 #include <string>
@@ -39,11 +40,14 @@ namespace YATACU {
         // Map a host visible buffer (pinned/managed) to HostPtr
         template <typename T>
         HostPtr<T> MapBuffer(CuBufferView<T> view) {
-            if (view.handle.id == CU_NULL_HANDLE || view.handle.id >= m_registry.size()) {
+            if (view.handle.id == CU_NULL_HANDLE || CU_GET_INDEX(view.handle) >= m_registry.size()) {
                 return HostPtr<T>(nullptr);
             }
 
-            const auto& record = m_records[view.handle.id];
+            CuAssert(CU_GET_GENERATION(view.handle) == m_generations[CU_GET_INDEX(view.handle)],
+                     "MapBuffer failed: Handle generation mismatch (Use-After-Free).");
+
+            const auto& record = m_records[CU_GET_INDEX(view.handle)];
             CuAssert(record.usage == CuMemoryUsage::CPU_PINNED || record.usage == CuMemoryUsage::GPU_MANAGED,
                      "MapBuffer failed: Buffer was not created with CPU_PINNED or GPU_MANAGED usage.");
 
@@ -53,9 +57,14 @@ namespace YATACU {
 
         template <typename T = void>
         T* GetRawPointerUnsafe(CuBuffer handle, size_t byteOffset = 0) const {
-            if (handle.id >= m_registry.size()) return nullptr;
+            if (handle.id == CU_NULL_HANDLE || CU_GET_INDEX(handle) >= m_registry.size()) return nullptr;
 
-            char* raw = static_cast<char*>(m_registry[handle.id]);
+            // Generational Check
+            if (CU_GET_GENERATION(handle) != m_generations[CU_GET_INDEX(handle)]) {
+                return nullptr;
+            }
+
+            char* raw = static_cast<char*>(m_registry[CU_GET_INDEX(handle)]);
             if (!raw) return nullptr;
 
             return reinterpret_cast<T*>(raw + byteOffset);
@@ -63,8 +72,13 @@ namespace YATACU {
 
     private:
 
-        std::vector<void*> m_registry; // Handle registry
+        std::vector<void*> m_registry;        // Pointer to raw memory (Host or Device)
+        std::vector<uint32_t> m_generations;  // Current generation for each registry index (ABA prevention)
+        std::vector<uint32_t> m_freeIndices;  // Recycled indices from destroyed resources to minimize registry growth
 
+        /**
+         * @brief Information about each allocation for debugging and leak detection.
+         */
         struct AllocRecord {
             size_t size;
             std::string debugName;
@@ -75,4 +89,4 @@ namespace YATACU {
         std::vector<AllocRecord> m_records;
     };
 }
-#endif //WAVEFRONTRENDERER_CUDADEVICE_CUH
+#endif //YATACU_CUDADEVICE_CUH

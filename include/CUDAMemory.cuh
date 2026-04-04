@@ -2,8 +2,8 @@
 // Created by Zhuoran Yi on 2026/2/22.
 //
 
-#ifndef WAVEFRONTRENDERER_CUDAMEMORY_CUH
-#define WAVEFRONTRENDERER_CUDAMEMORY_CUH
+#ifndef YATACU_CUDAMEMORY_CUH
+#define YATACU_CUDAMEMORY_CUH
 
 #include <CUDADefines.cuh>
 
@@ -74,4 +74,4 @@ namespace YATACU {
     };
 }
 
-#endif //WAVEFRONTRENDERER_CUDAMEMORY_CUH
+#endif //YATACU_CUDAMEMORY_CUH

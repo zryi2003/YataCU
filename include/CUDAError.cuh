@@ -2,8 +2,8 @@
 // Created by Zhuoran Yi on 2026/2/22.
 //
 
-#ifndef WAVEFRONTRENDERER_CUDAERROR_CUH
-#define WAVEFRONTRENDERER_CUDAERROR_CUH
+#ifndef YATACU_CUDAERROR_CUH
+#define YATACU_CUDAERROR_CUH
 #include <cuda_runtime.h>
 #include <iostream>
 #include <source_location>
@@ -41,4 +41,4 @@ namespace YATACU {
     }
 }
 
-#endif //WAVEFRONTRENDERER_CUDAERROR_CUH
+#endif //YATACU_CUDAERROR_CUH
