@@ -8,6 +8,7 @@
 #include <CUDASpecs.cuh>
 #include <CUDAMemory.cuh>
 #include <CUDAError.cuh>
+#include <type_traits>
 
 namespace YATACU {
     class CuDevice;
@@ -22,19 +23,33 @@ namespace YATACU {
         CuCommandStream(const CuCommandStream&) = delete;
         CuCommandStream& operator=(const CuCommandStream&) = delete;
 
+        /**
+         * @brief Simple 1D dispatch for convenience. Grid/Block size is auto-calculated with default block size of 256.
+         * Constraints: Arguments must be trivially copyable and NOT pointers or references.
+         */
         template <typename KernelFunc, typename... Args>
+        requires ((std::is_trivially_copyable_v<Args> && 
+                   !std::is_pointer_v<Args> && 
+                   !std::is_reference_v<Args>) && ...)
         void Dispatch(uint32_t threadCount, KernelFunc kernel, Args... args) {
             if (threadCount == 0) return;
 
-            // TODO: CuDispatchInfo
-            int blockSize = 256;
-            int gridSize = (threadCount + blockSize - 1) / blockSize;
+            uint32_t blockSize = 256;
+            uint32_t gridSize = (threadCount + blockSize - 1) / blockSize;
 
-            // Parameter Pack Expansion
-            kernel<<<gridSize, blockSize, 0, m_stream>>>(ResolveArg(m_device, args)...);
+            DispatchInternal(gridSize, blockSize, 0, kernel, args...);
+        }
 
-            // Catch launch error
-            CuCheck(cudaGetLastError(), "Kernel Dispatch Failed");
+        /**
+         * @brief Explicit dispatch with full control over grid/block dimensions and shared memory.
+         * Constraints: Arguments must be trivially copyable and NOT pointers or references.
+         */
+        template <typename KernelFunc, typename... Args>
+        requires ((std::is_trivially_copyable_v<Args> && 
+                   !std::is_pointer_v<Args> && 
+                   !std::is_reference_v<Args>) && ...)
+        void Dispatch(const CuDispatchInfo& info, KernelFunc kernel, Args... args) {
+            DispatchInternal(info.gridDim, info.blockDim, info.sharedMemBytes, kernel, args...);
         }
 
         template <typename T>
@@ -51,26 +66,25 @@ namespace YATACU {
                     "D2H Copy Failed");
         }
 
-
         void WaitIdle(); // Wait for this stream idle
 
     private:
         const CuDevice& m_device;
         cudaStream_t m_stream;
 
+        template <typename KernelFunc, typename... Args>
+        void DispatchInternal(dim3 grid, dim3 block, size_t shmem, KernelFunc kernel, Args... args) {
+            kernel<<<grid, block, shmem, m_stream>>>(ResolveArg(m_device, args)...);
+            CuCheck(cudaGetLastError(), "Kernel Dispatch Failed");
+        }
+
         template <typename T>
-        __host__ inline T ResolveArg(const CuDevice&, T val) { // NOLINT
-            if constexpr (std::is_pointer_v<T>) {
-                static_assert(!std::is_pointer_v<T>,
-                              "\n\n[YataCU FATAL ERROR] Raw C++ pointers cannot be passed directly to a kernel. "
-                              "\n    - For device memory, wrap it in a CuBuffer/CuBufferView."
-                              "\n    - For host data, use stream.CopyHostToDevice() to upload it first.\n");
-            }
+        __host__ inline T ResolveArg(const CuDevice&, T val) { 
             return val;
         }
 
         template <typename T>
-        __host__ inline DevicePtr<T> ResolveArg(const CuDevice& dev, CuBufferView<T> view) { // NOLINT
+        __host__ inline DevicePtr<T> ResolveArg(const CuDevice& dev, CuBufferView<T> view) {
             T* raw_ptr = dev.GetRawPointerUnsafe<T>(view.handle, view.byteOffset);
             return DevicePtr<T>(raw_ptr);
         }

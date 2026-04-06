@@ -48,9 +48,8 @@ namespace YATACU {
      * Mimics a subset of Vulkan's pipeline/dispatch state.
      */
     struct CuDispatchInfo {
-        uint32_t threadCount = 0;   // If non-zero, grid/block will be auto-calculated.
-        dim3 gridDim = {0, 0, 0};   // Manual grid dimensions.
-        dim3 blockDim = {0, 0, 0};  // Manual block dimensions.
+        dim3 gridDim = {1, 1, 1};   // Explicit grid dimensions.
+        dim3 blockDim = {256, 1, 1}; // Explicit block dimensions.
         size_t sharedMemBytes = 0;  // Dynamic shared memory size in bytes.
     };
 
