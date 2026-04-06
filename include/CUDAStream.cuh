@@ -5,11 +5,13 @@
 #ifndef YATACU_CUDASTREAM_CUH
 #define YATACU_CUDASTREAM_CUH
 
-#include <CUDADevice.cuh>
+#include <CUDASpecs.cuh>
 #include <CUDAMemory.cuh>
 #include <CUDAError.cuh>
 
 namespace YATACU {
+    class CuDevice;
+
     class CuCommandStream {
     public:
         // Bind stream to a specific device

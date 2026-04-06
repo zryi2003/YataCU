@@ -32,23 +32,6 @@ namespace YATACU {
         __host__ __device__ bool operator!=(const Name& other) const { return id != other.id; } \
     };
 
-    YATACU_DEFINE_HANDLE(CuBuffer)
-    YATACU_DEFINE_HANDLE(CuStream)
-
-    enum class CuMemoryUsage {
-        // Device-local memory; physically resident on the GPU.
-        // Inaccessible from Host directly; provides highest bandwidth.
-        GPU_ONLY,
-
-        // Page-locked (pinned) memory; host-visible and accessible by GPU via DMA.
-        // Optimized for high-bandwidth transfers between Host and Device.
-        CPU_PINNED,
-
-        // Unified Memory; driver-managed data migration.
-        // Accessible by both Host and Device with on-demand page faulting.
-        GPU_MANAGED
-    };
-
-}
+} // namespace YATACU
 
 #endif //YATACU_CUDADEFINES_CUH

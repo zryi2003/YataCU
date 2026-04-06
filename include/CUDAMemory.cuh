@@ -5,7 +5,7 @@
 #ifndef YATACU_CUDAMEMORY_CUH
 #define YATACU_CUDAMEMORY_CUH
 
-#include <CUDADefines.cuh>
+#include <CUDASpecs.cuh>
 
 namespace YATACU {
     class CuDevice;

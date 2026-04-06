@@ -4,7 +4,7 @@
 
 #ifndef YATACU_CUDADEVICE_CUH
 #define YATACU_CUDADEVICE_CUH
-#include <CUDADefines.cuh>
+#include <CUDASpecs.cuh>
 #include <CUDAError.cuh>
 #include <CUDAMemory.cuh>
 #include <source_location>
@@ -12,14 +12,6 @@
 #include <vector>
 
 namespace YATACU {
-
-    struct CuBufferCreateInfo {
-        size_t size = 0;
-        CuMemoryUsage usage = CuMemoryUsage::GPU_ONLY;
-        const char* debugName = "Unnamed_Buffer";
-
-        // TODO: VMA-like memory allocator. Extra parameters, like alignment can be added
-    };
 
 
     class CuDevice {
