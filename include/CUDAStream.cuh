@@ -9,6 +9,7 @@
 #include <CUDAMemory.cuh>
 #include <CUDAError.cuh>
 #include <CUDAGraph.cuh>
+#include <CUDAEvent.cuh>
 #include <type_traits>
 
 namespace YATACU {
@@ -28,6 +29,10 @@ namespace YATACU {
         void BeginCapture();
         void EndCapture(CuGraph& outGraph);
         void Launch(const CuGraph& graph);
+
+        // --- [Event Synchronization] ---
+        void Record(const CuEvent& event);
+        void WaitEvent(const CuEvent& event);
 
         /**
          * @brief Simple 1D dispatch for convenience. Grid/Block size is auto-calculated with default block size of 256.

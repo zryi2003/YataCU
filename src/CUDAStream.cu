@@ -43,4 +43,12 @@ namespace YATACU {
         }
     }
 
+    void CuCommandStream::Record(const CuEvent& event) {
+        CuCheck(cudaEventRecord(event.Get(), m_stream), "Failed to record event");
     }
+
+    void CuCommandStream::WaitEvent(const CuEvent& event) {
+        CuCheck(cudaStreamWaitEvent(m_stream, event.Get(), 0), "Stream WaitEvent failed");
+    }
+
+}
