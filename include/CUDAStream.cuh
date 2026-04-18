@@ -8,6 +8,7 @@
 #include <CUDASpecs.cuh>
 #include <CUDAMemory.cuh>
 #include <CUDAError.cuh>
+#include <CUDAGraph.cuh>
 #include <type_traits>
 
 namespace YATACU {
@@ -22,6 +23,11 @@ namespace YATACU {
         // Stream is not copyable
         CuCommandStream(const CuCommandStream&) = delete;
         CuCommandStream& operator=(const CuCommandStream&) = delete;
+
+        // --- [Graph Capture] ---
+        void BeginCapture();
+        void EndCapture(CuGraph& outGraph);
+        void Launch(const CuGraph& graph);
 
         /**
          * @brief Simple 1D dispatch for convenience. Grid/Block size is auto-calculated with default block size of 256.

@@ -27,4 +27,20 @@ namespace YATACU {
         CuCheck(cudaStreamSynchronize(m_stream), "Stream WaitIdle failed");
     }
 
-}
+    void CuCommandStream::BeginCapture() {
+        CuCheck(cudaStreamBeginCapture(m_stream, cudaStreamCaptureModeGlobal), "Failed to begin stream capture");
+    }
+
+    void CuCommandStream::EndCapture(CuGraph& outGraph) {
+        cudaGraph_t capturedGraph = nullptr;
+        CuCheck(cudaStreamEndCapture(m_stream, &capturedGraph), "Failed to end stream capture");
+        outGraph.InitializeFromCapture(capturedGraph);
+    }
+
+    void CuCommandStream::Launch(const CuGraph& graph) {
+        if (graph.IsInstantiated()) {
+            CuCheck(cudaGraphLaunch(graph.m_exec, m_stream), "Failed to launch CUDA Graph");
+        }
+    }
+
+    }
