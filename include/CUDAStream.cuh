@@ -77,6 +77,15 @@ namespace YATACU {
                     "D2H Copy Failed");
         }
 
+        template <typename T>
+        void CopyDeviceToDevice(CuBufferView<T> dst, CuBufferView<T> src, size_t elementCount) {
+            T* dst_raw = m_device.GetRawPointerUnsafe<T>(dst.handle, dst.byteOffset);
+            T* src_raw = m_device.GetRawPointerUnsafe<T>(src.handle, src.byteOffset);
+
+            CuCheck(cudaMemcpyAsync(dst_raw, src_raw, elementCount * sizeof(T), cudaMemcpyDeviceToDevice, m_stream),
+                    "D2D Copy Failed");
+        }
+
         void WaitIdle(); // Wait for this stream idle
 
     private:
